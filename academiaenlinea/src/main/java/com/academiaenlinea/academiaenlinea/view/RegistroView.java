@@ -4,32 +4,31 @@ import com.academiaenlinea.academiaenlinea.service.UsuarioService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Route("registro")
-public class RegistroView extends FormLayout {
+public class RegistroView extends VerticalLayout {
 
     private final UsuarioService usuarioService;
 
-    private final TextField nombreCompleto = new TextField("Nombre Completo");
-    private final EmailField email = new EmailField("Correo Electrónico");
+    private final TextField nombreCompleto = new TextField("Nombre completo");
+    private final EmailField email = new EmailField("Correo electrónico");
     private final PasswordField password = new PasswordField("Contraseña");
-    private final PasswordField confirmarPassword = new PasswordField("Confirmar Contraseña");
-    private final Button botonRegistrar = new Button("Registrarse");
+    private final PasswordField confirmarPassword = new PasswordField("Confirmar contraseña");
+    private final Button registrar = new Button("Registrarse");
 
     @Autowired
     public RegistroView(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
 
-        add(nombreCompleto, email, password, confirmarPassword, botonRegistrar);
+        add(nombreCompleto, email, password, confirmarPassword, registrar);
 
-        botonRegistrar.addClickListener(event -> {
+        registrar.addClickListener(event -> {
             if (nombreCompleto.isEmpty() || email.isEmpty() || password.isEmpty() || confirmarPassword.isEmpty()) {
-                Notification.show("Por favor, completa todos los campos");
+                Notification.show("Completa todos los campos");
                 return;
             }
 
@@ -40,19 +39,19 @@ public class RegistroView extends FormLayout {
 
             try {
                 usuarioService.registrarUsuario(
-                        nombreCompleto.getValue(),
-                        email.getValue(),
-                        password.getValue()
+                    nombreCompleto.getValue(),
+                    email.getValue(),
+                    password.getValue()
                 );
-                Notification.show("Registro exitoso! Revisa tu correo.");
-                clearForm();
+                Notification.show("Registro exitoso. Revisa tu correo para activarlo.");
+                limpiar();
             } catch (IllegalArgumentException e) {
                 Notification.show(e.getMessage());
             }
         });
     }
 
-    private void clearForm() {
+    private void limpiar() {
         nombreCompleto.clear();
         email.clear();
         password.clear();
