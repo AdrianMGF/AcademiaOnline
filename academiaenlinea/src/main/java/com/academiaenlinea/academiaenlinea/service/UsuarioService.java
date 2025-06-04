@@ -5,9 +5,12 @@ import com.academiaenlinea.academiaenlinea.model.TokenVerificacion;
 import com.academiaenlinea.academiaenlinea.repository.UsuarioRepository;
 import com.academiaenlinea.academiaenlinea.repository.TokenVerificacionRepository;
 import jakarta.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +23,8 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepo;
     private final TokenVerificacionRepository tokenRepo;
     private final JavaMailSender mailSender;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public UsuarioService(UsuarioRepository usuarioRepo, TokenVerificacionRepository tokenRepo, JavaMailSender mailSender) {
         this.usuarioRepo = usuarioRepo;
@@ -36,7 +41,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNombreCompleto(nombre);
         usuario.setEmail(email);
-        usuario.setPassword(new BCryptPasswordEncoder().encode(password));
+        usuario.setPassword(passwordEncoder.encode(password));
         usuario.setActivo(false);
         usuario.setRol("ALUMNO");
         usuarioRepo.save(usuario);
@@ -75,4 +80,20 @@ public class UsuarioService {
         tokenRepo.delete(tv);
         return true;
     }
+
+    public boolean login(String email, String password) {
+    Optional<Usuario> usuarioOpt = usuarioRepo.findByEmail(email);
+    if (usuarioOpt.isPresent()) {
+        Usuario usuario = usuarioOpt.get();
+        boolean contraseñaCoincide = passwordEncoder.matches(password, usuario.getPassword());
+
+            return contraseñaCoincide && usuario.isActivo();
+    }
+    return false;
+    
+}
+public Optional<Usuario> findByEmail(String email) {
+    return usuarioRepo.findByEmail(email);
+}
+
 }

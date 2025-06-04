@@ -7,9 +7,15 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+
+import jakarta.annotation.security.PermitAll;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Route("registro")
+@PermitAll
+@AnonymousAllowed
 public class RegistroView extends VerticalLayout {
 
     private final UsuarioService usuarioService;
