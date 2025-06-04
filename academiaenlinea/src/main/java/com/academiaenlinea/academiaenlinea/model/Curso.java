@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,11 +33,10 @@ public class Curso {
     @Enumerated(EnumType.STRING)
     private EstadoCurso estado;
 
-    @ManyToOne
-    private Usuario instructor;
 
-@OneToMany(fetch = FetchType.EAGER, mappedBy = "curso")
-private List<Modulo> modulos;
+@OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+private List<Modulo> modulos = new ArrayList<>();
+
     public enum Nivel {
         BASICO, INTERMEDIO, AVANZADO
     }

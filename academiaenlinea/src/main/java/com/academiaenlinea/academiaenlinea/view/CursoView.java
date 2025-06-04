@@ -10,6 +10,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
@@ -40,6 +41,9 @@ public class CursoView extends VerticalLayout {
     private final Button guardarBtn = new Button("Guardar curso");
     private final Button eliminarBtn = new Button("Eliminar curso");
     private final Button inscribirseBtn = new Button("Inscribirse");
+   private final TextField tituloModulo = new TextField("Título del Módulo");
+private final IntegerField ordenModulo = new IntegerField("Orden");
+private final TextArea descripcionModulo = new TextArea("Descripción");
 
 
     private final List<Modulo> modulosTemp = new ArrayList<>();
@@ -66,12 +70,12 @@ String rol = SecurityContextHolder.getContext().getAuthentication().getAuthoriti
     .orElse("");
 
 if (rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")) {
-    grid.setItems(cursoService.listarTodosLosCursos()); // método que debe listar todos los cursos
+    grid.setItems(cursoService.listarTodosLosCursos()); 
     agregarModuloBtn.setVisible(true);
     guardarBtn.setVisible(true);
     eliminarBtn.setVisible(true);
 } else if (rol.equals("ROLE_ALUMNO")) {
-    grid.setItems(cursoService.listarCursosPublicados()); // método para cursos publicados solo
+    grid.setItems(cursoService.listarCursosPublicados());
     agregarModuloBtn.setVisible(false);
     guardarBtn.setVisible(false);
     eliminarBtn.setVisible(false);
@@ -81,7 +85,6 @@ inscribirseBtn.addClickListener(e -> {
             Notification.show("Selecciona un curso para inscribirte");
             return;
         }
-        // lógica inscripción
         Notification.show("Te has inscrito en el curso: " + cursoSeleccionado.getTitulo());
     });
 
@@ -114,8 +117,7 @@ modulosLayout.setEnabled(!esAlumno);
     }
 
     private void actualizarCursosUsuarioActual() {
-    String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-    grid.setItems(cursoService.listarCursosPorInstructor(email));
+     grid.setItems(cursoService.listarTodosLosCursos());
     }
     private void agregarBotonInscribirse() {
     Button inscribirseBtn = new Button("Inscribirse");
@@ -133,31 +135,31 @@ modulosLayout.setEnabled(!esAlumno);
 }
 
     private void agregarModuloForm(Modulo moduloExistente) {
-        TextField tituloModulo = new TextField("Título del módulo");
-        tituloModulo.setWidthFull();
-        if (moduloExistente != null) tituloModulo.setValue(moduloExistente.getTitulo());
+    TextField tituloModuloField = new TextField("Título del módulo");
+    IntegerField ordenModuloField = new IntegerField("Orden");
+    TextArea descripcionModuloField = new TextArea("Descripción");
 
-        Button eliminar = new Button("Eliminar");
-        HorizontalLayout moduloRow = new HorizontalLayout(tituloModulo, eliminar);
-        moduloRow.setWidthFull();
+    tituloModuloField.setWidth("200px");
+    ordenModuloField.setWidth("100px");
+    descripcionModuloField.setWidth("300px");
 
-        eliminar.addClickListener(e -> {
-            modulosLayout.remove(moduloRow);
-            modulosTemp.removeIf(m -> m.getTitulo().equals(tituloModulo.getValue()));
-        });
+    Button eliminar = new Button("Eliminar");
+    HorizontalLayout moduloRow = new HorizontalLayout(tituloModuloField, ordenModuloField, descripcionModuloField, eliminar);
+    moduloRow.setWidthFull();
 
-        modulosLayout.add(moduloRow);
-
-        if (moduloExistente == null) {
-    Modulo nuevo = Modulo.builder()
-            .titulo(tituloModulo.getValue())
-            .orden(modulosTemp.size() + 1)
-            .build();
-    modulosTemp.add(nuevo);
-} else {
-    modulosTemp.add(moduloExistente);
-}
+    if (moduloExistente != null) {
+        tituloModuloField.setValue(moduloExistente.getTitulo());
+        ordenModuloField.setValue(moduloExistente.getOrden());
+        descripcionModuloField.setValue(moduloExistente.getDescripcion());
     }
+
+    eliminar.addClickListener(e -> {
+        modulosLayout.remove(moduloRow);
+    });
+
+    modulosLayout.add(moduloRow);
+}
+
 
     private void cargarCurso(Curso curso) {
         if (curso == null) return;
@@ -194,15 +196,41 @@ modulosLayout.setEnabled(!esAlumno);
         curso.setNivel(nivel.getValue());
         curso.setEstado(estado.getValue());
 
-        curso.setModulos(modulosTemp);
+        List<Modulo> modulosActualizados = new ArrayList<>();
 
-       String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        cursoService.getInstructorPorEmail(email).ifPresent(instructor -> curso.setInstructor(instructor));
+for (var componente : modulosLayout.getChildren().toList()) {
+    if (componente instanceof HorizontalLayout layout) {
+        TextField tituloField = (TextField) layout.getComponentAt(0);
+        IntegerField ordenField = (IntegerField) layout.getComponentAt(1);
+        TextArea descripcionField = (TextArea) layout.getComponentAt(2);
 
+        if (!tituloField.isEmpty()) {
+            Modulo mod = Modulo.builder()
+                    .titulo(tituloField.getValue())
+                    .orden(ordenField.getValue() != null ? ordenField.getValue() : 1)
+                    .descripcion(descripcionField.getValue())
+                    .curso(curso)
+                    .build();
+                    if (cursoActual != null) {
+                        cursoActual.getModulos().stream()
+                        .filter(m -> m.getTitulo().equals(tituloField.getValue()))
+                        .findFirst()
+                        .ifPresent(m -> mod.setId(m.getId()));
+                    }
+            mod.setCurso(curso);
+            modulosActualizados.add(mod);
+        }
+    }
+}
+
+curso.setModulos(modulosActualizados);
+
+       
         cursoService.crearOCrearCurso(curso);
         Notification.show("Curso guardado exitosamente");
         limpiarFormulario();
-actualizarCursosSegunRol();    }
+actualizarCursosSegunRol();    
+}
 
     private void limpiarFormulario() {
         titulo.clear();

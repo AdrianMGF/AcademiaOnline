@@ -34,9 +34,10 @@ public List<Curso> listarCursosPublicados() {
         return cursoRepository.findAll();
     }
 
-    public List<Curso> listarCursosPorInstructor(String email) {
-        return cursoRepository.findByInstructorEmail(email);
-    }
+   
+    public List<Curso> obtenerCursosConModulos() {
+    return cursoRepository.findAllWithModulos();
+}
 
     public Curso crearOCrearCurso(Curso curso) {
         return cursoRepository.save(curso);
