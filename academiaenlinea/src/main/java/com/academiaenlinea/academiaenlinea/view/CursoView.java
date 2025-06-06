@@ -2,7 +2,10 @@ package com.academiaenlinea.academiaenlinea.view;
 
 import com.academiaenlinea.academiaenlinea.model.Curso;
 import com.academiaenlinea.academiaenlinea.model.Modulo;
+import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.service.CursoService;
+import com.academiaenlinea.academiaenlinea.service.InscripcionService;
+import com.academiaenlinea.academiaenlinea.service.UsuarioService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -52,9 +55,13 @@ private final Button agregarCursoBtn = new Button("Agregar");
 
     private final List<Modulo> modulosTemp = new ArrayList<>();
     private Curso cursoActual;
+    private final UsuarioService usuarioService;
+private final InscripcionService inscripcionService;
 
-    public CursoView(CursoService cursoService) {
-        this.cursoService = cursoService;
+    public CursoView(CursoService cursoService, UsuarioService usuarioService, InscripcionService inscripcionService) {
+    this.cursoService = cursoService;
+    this.usuarioService = usuarioService;
+    this.inscripcionService = inscripcionService;
         
         eliminarBtn.setEnabled(false);
         setPadding(true);
@@ -89,13 +96,23 @@ agregarCursoBtn.addClickListener(e -> {
             guardarBtn.setVisible(false);
             eliminarBtn.setVisible(false);
         inscribirseBtn.addClickListener(e -> {
-                Curso cursoSeleccionado = grid.asSingleSelect().getValue();
-                if (cursoSeleccionado == null) {
-                    Notification.show("Selecciona un curso para inscribirte");
-                    return;
-                }
-                Notification.show("Te has inscrito en el curso: " + cursoSeleccionado.getTitulo());
-            });
+    Curso cursoSeleccionado = grid.asSingleSelect().getValue();
+    if (cursoSeleccionado == null) {
+        Notification.show("Selecciona un curso para inscribirte");
+        return;
+    }
+
+    UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+Usuario alumno = usuarioService.buscarPorUsername(userDetails.getUsername());
+
+boolean exito = inscripcionService.inscribirAlumno(alumno, cursoSeleccionado);
+
+if (exito) {
+    Notification.show("Inscripción exitosa");
+} else {
+    Notification.show("Ya estás inscrito o no hay cupo");
+}
+});
 
             if (rol.equals("ROLE_ALUMNO")) {
                 add(inscribirseBtn);

@@ -33,6 +33,8 @@ public class Curso {
     @Enumerated(EnumType.STRING)
     private EstadoCurso estado;
 
+    private Integer capacidad;
+
 
 @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 private List<Modulo> modulos = new ArrayList<>();

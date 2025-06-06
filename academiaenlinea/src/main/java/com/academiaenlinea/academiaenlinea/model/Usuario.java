@@ -1,5 +1,8 @@
 package com.academiaenlinea.academiaenlinea.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,11 +29,18 @@ public class Usuario{
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String rol;  // "ALUMNO", "INSTRUCTOR", "ADMIN"
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
 
     @Column(nullable = false)
-    private boolean activo = false; // para activar cuenta tras validación correo
+    private boolean activo = false; 
+
+    @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Inscripcion> inscripciones = new ArrayList<>();
+
+    public enum Rol {
+        ADMIN, INSTRUCTOR, ALUMNO
+    }
 }
 
 

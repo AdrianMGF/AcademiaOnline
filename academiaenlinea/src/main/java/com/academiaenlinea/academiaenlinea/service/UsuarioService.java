@@ -43,7 +43,7 @@ public class UsuarioService {
         usuario.setEmail(email);
         usuario.setPassword(passwordEncoder.encode(password));
         usuario.setActivo(false);
-        usuario.setRol("ALUMNO");
+        usuario.setRol(Usuario.Rol.valueOf("ALUMNO"));
         usuarioRepo.save(usuario);
 
         String token = UUID.randomUUID().toString();
@@ -94,6 +94,10 @@ public class UsuarioService {
 }
 public Optional<Usuario> findByEmail(String email) {
     return usuarioRepo.findByEmail(email);
+}
+public Usuario buscarPorUsername(String username) {
+    return usuarioRepo.findByEmail(username)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + username));
 }
 
 }
