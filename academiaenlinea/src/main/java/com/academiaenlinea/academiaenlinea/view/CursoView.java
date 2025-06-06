@@ -47,6 +47,7 @@ private final TextArea descripcionModulo = new TextArea("Descripción");
 private final VerticalLayout formularioLayout = new VerticalLayout();
 private final TextField filtroTitulo = new TextField("Buscar por título");
 private final ComboBox<Curso.EstadoCurso> filtroEstado = new ComboBox<>("Filtrar por estado");
+private final Button agregarCursoBtn = new Button("Agregar");
 
 
     private final List<Modulo> modulosTemp = new ArrayList<>();
@@ -73,6 +74,11 @@ private final ComboBox<Curso.EstadoCurso> filtroEstado = new ComboBox<>("Filtrar
             .orElse("");
 
         if (rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")) {
+            add(agregarCursoBtn);
+agregarCursoBtn.addClickListener(e -> {
+    limpiarFormulario();  
+    formularioLayout.setVisible(true); 
+});
             grid.setItems(cursoService.listarTodosLosCursos()); 
             agregarModuloBtn.setVisible(true);
             guardarBtn.setVisible(true);
