@@ -44,6 +44,9 @@ public class CursoView extends VerticalLayout {
    private final TextField tituloModulo = new TextField("Título del Módulo");
 private final IntegerField ordenModulo = new IntegerField("Orden");
 private final TextArea descripcionModulo = new TextArea("Descripción");
+private final VerticalLayout formularioLayout = new VerticalLayout();
+private final TextField filtroTitulo = new TextField("Buscar por título");
+private final ComboBox<Curso.EstadoCurso> filtroEstado = new ComboBox<>("Filtrar por estado");
 
 
     private final List<Modulo> modulosTemp = new ArrayList<>();
@@ -63,58 +66,98 @@ private final TextArea descripcionModulo = new TextArea("Descripción");
 
         grid.setColumns("titulo", "nivel", "estado", "fechaInicio", "fechaFin");
         grid.asSingleSelect().addValueChangeListener(e -> cargarCurso(e.getValue()));
-String rol = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-    .stream()
-    .findFirst()
-    .map(auth -> auth.getAuthority())
-    .orElse("");
+        String rol = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+            .stream()
+            .findFirst()
+            .map(auth -> auth.getAuthority())
+            .orElse("");
 
-if (rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")) {
-    grid.setItems(cursoService.listarTodosLosCursos()); 
-    agregarModuloBtn.setVisible(true);
-    guardarBtn.setVisible(true);
-    eliminarBtn.setVisible(true);
-} else if (rol.equals("ROLE_ALUMNO")) {
-    grid.setItems(cursoService.listarCursosPublicados());
-    agregarModuloBtn.setVisible(false);
-    guardarBtn.setVisible(false);
-    eliminarBtn.setVisible(false);
-inscribirseBtn.addClickListener(e -> {
-        Curso cursoSeleccionado = grid.asSingleSelect().getValue();
-        if (cursoSeleccionado == null) {
-            Notification.show("Selecciona un curso para inscribirte");
-            return;
+        if (rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")) {
+            grid.setItems(cursoService.listarTodosLosCursos()); 
+            agregarModuloBtn.setVisible(true);
+            guardarBtn.setVisible(true);
+            eliminarBtn.setVisible(true);
+        } else if (rol.equals("ROLE_ALUMNO")) {
+            grid.setItems(cursoService.listarCursosPublicados());
+            agregarModuloBtn.setVisible(false);
+            guardarBtn.setVisible(false);
+            eliminarBtn.setVisible(false);
+        inscribirseBtn.addClickListener(e -> {
+                Curso cursoSeleccionado = grid.asSingleSelect().getValue();
+                if (cursoSeleccionado == null) {
+                    Notification.show("Selecciona un curso para inscribirte");
+                    return;
+                }
+                Notification.show("Te has inscrito en el curso: " + cursoSeleccionado.getTitulo());
+            });
+
+            if (rol.equals("ROLE_ALUMNO")) {
+                add(inscribirseBtn);
+            }}
+        boolean esAlumno = rol.equals("ROLE_ALUMNO");
+        titulo.setReadOnly(esAlumno);
+        descripcion.setReadOnly(esAlumno);
+        fechaInicio.setReadOnly(esAlumno);
+        fechaFin.setReadOnly(esAlumno);
+        nivel.setReadOnly(esAlumno);
+        estado.setReadOnly(esAlumno);
+
+        modulosLayout.setEnabled(!esAlumno);
+                agregarModuloBtn.addClickListener(e -> agregarModuloForm(null));
+                guardarBtn.addClickListener(e -> guardarCurso());
+                eliminarBtn.addClickListener(e -> {
+            if (cursoActual != null && cursoActual.getId() != null) {
+                cursoService.eliminarCurso(cursoActual.getId());
+                Notification.show("Curso eliminado");
+                limpiarFormulario();
+                actualizarCursosUsuarioActual(); // Refresca el grid
+            } else {
+                Notification.show("No hay curso seleccionado para eliminar");
+            }
+        });
+
+        formularioLayout.add(titulo, descripcion, fechaInicio, fechaFin, nivel, estado, modulosLayout, botones);
+
+        formularioLayout.setVisible(false); 
+        filtroTitulo.setPlaceholder("Título...");
+        filtroTitulo.setClearButtonVisible(true);
+
+        filtroEstado.setItems(Curso.EstadoCurso.values());
+        filtroEstado.setPlaceholder("Estado...");
+        filtroEstado.setClearButtonVisible(true);
+
+        filtroTitulo.addValueChangeListener(e -> filtrarCursos());
+        filtroEstado.addValueChangeListener(e -> filtrarCursos());
+
+        HorizontalLayout filtrosLayout = new HorizontalLayout(filtroTitulo, filtroEstado);
+        if (rol.equals("ROLE_ALUMNO")) {
+            filtroEstado.setVisible(false);
         }
-        Notification.show("Te has inscrito en el curso: " + cursoSeleccionado.getTitulo());
-    });
+        add(filtrosLayout);
+        add(grid, formularioLayout);    
+}
 
-    if (rol.equals("ROLE_ALUMNO")) {
-        add(inscribirseBtn);
-    }}
-boolean esAlumno = rol.equals("ROLE_ALUMNO");
-titulo.setReadOnly(esAlumno);
-descripcion.setReadOnly(esAlumno);
-fechaInicio.setReadOnly(esAlumno);
-fechaFin.setReadOnly(esAlumno);
-nivel.setReadOnly(esAlumno);
-estado.setReadOnly(esAlumno);
+private void filtrarCursos() {
+    String tituloFiltro = filtroTitulo.getValue().trim().toLowerCase();
+    Curso.EstadoCurso estadoFiltro = filtroEstado.getValue();
 
-modulosLayout.setEnabled(!esAlumno);
-        agregarModuloBtn.addClickListener(e -> agregarModuloForm(null));
-        guardarBtn.addClickListener(e -> guardarCurso());
-        eliminarBtn.addClickListener(e -> {
-    if (cursoActual != null && cursoActual.getId() != null) {
-        cursoService.eliminarCurso(cursoActual.getId());
-        Notification.show("Curso eliminado");
-        limpiarFormulario();
-        actualizarCursosUsuarioActual(); // Refresca el grid
-    } else {
-        Notification.show("No hay curso seleccionado para eliminar");
-    }
-});
+    String rol = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+        .stream()
+        .findFirst()
+        .map(auth -> auth.getAuthority())
+        .orElse("");
 
-        add(grid, titulo, descripcion, fechaInicio, fechaFin, nivel, estado, modulosLayout, botones);
-    }
+    List<Curso> cursos = rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")
+        ? cursoService.listarTodosLosCursos()
+        : cursoService.listarCursosPublicados();
+
+    List<Curso> filtrados = cursos.stream()
+        .filter(c -> (tituloFiltro.isEmpty() || c.getTitulo().toLowerCase().contains(tituloFiltro)))
+        .filter(c -> (estadoFiltro == null || c.getEstado() == estadoFiltro))
+        .toList();
+
+    grid.setItems(filtrados);
+}
 
     private void actualizarCursosUsuarioActual() {
      grid.setItems(cursoService.listarTodosLosCursos());
@@ -165,6 +208,7 @@ modulosLayout.setEnabled(!esAlumno);
         if (curso == null) return;
 
         cursoActual = curso;
+        formularioLayout.setVisible(true);
         titulo.setValue(curso.getTitulo());
         descripcion.setValue(curso.getDescripcion());
         fechaInicio.setValue(curso.getFechaInicio());
@@ -243,6 +287,7 @@ actualizarCursosSegunRol();
         modulosTemp.clear();
         cursoActual = null;
         eliminarBtn.setEnabled(false);
+        formularioLayout.setVisible(false);
     }
     private void actualizarCursosSegunRol() {
     String rol = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
