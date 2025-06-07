@@ -2,10 +2,15 @@ package com.academiaenlinea.academiaenlinea.service;
 
 import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.model.Inscripcion;
+import com.academiaenlinea.academiaenlinea.model.ProgresoModulo;
 import com.academiaenlinea.academiaenlinea.model.TokenVerificacion;
 import com.academiaenlinea.academiaenlinea.repository.UsuarioRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import com.academiaenlinea.academiaenlinea.repository.TokenVerificacionRepository;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.academiaenlinea.academiaenlinea.repository.InscripcionRepository;
+
 
 @Service
 public class UsuarioService {
@@ -27,11 +34,13 @@ public class UsuarioService {
     private final JavaMailSender mailSender;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    private final InscripcionRepository inscripcionRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepo, TokenVerificacionRepository tokenRepo, JavaMailSender mailSender) {
+    public UsuarioService(UsuarioRepository usuarioRepo, TokenVerificacionRepository tokenRepo, JavaMailSender mailSender, InscripcionRepository inscripcionRepository) {
         this.usuarioRepo = usuarioRepo;
         this.tokenRepo = tokenRepo;
         this.mailSender = mailSender;
+        this.inscripcionRepository = inscripcionRepository;
     }
 
     @Transactional
@@ -114,18 +123,43 @@ public Usuario buscarPorUsername(String username) {
     }
 
     @Transactional(readOnly = true)
-    public Usuario buscarAlumnoConInscripciones(String username) {
-        Usuario alumno = usuarioRepo.findByEmail(username)
-            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+public Usuario buscarAlumnoConInscripciones(String username) {
+    Usuario alumno = usuarioRepo.findByEmail(username)
+        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        // Fuerza la carga de las inscripciones (y de los cursos/modulos si son lazy)
-        alumno.getInscripciones().size(); // Inicializa inscripciones
-        alumno.getInscripciones().forEach(i -> {
-            i.getCurso().getTitulo(); // Inicializa curso
-            i.getCurso().getModulos().size(); // Inicializa módulos
-        });
+    alumno.getInscripciones().size();
+    alumno.getInscripciones().forEach(i -> {
+        i.getCurso().getTitulo(); 
+        i.getCurso().getModulos().size();
+        i.getProgresos().size();
+    });
 
-        return alumno;
+    return alumno;
+}
+public record ProgresoCursoResumen(double porcentajeCompletado, double promedioCalificacion) {}
+@Transactional
+public ProgresoCursoResumen calcularResumen(Long inscripcionId) {
+    Inscripcion inscripcion = inscripcionRepository.findById(inscripcionId)
+        .orElseThrow(() -> new EntityNotFoundException("Inscripcion no encontrada"));
+
+    Hibernate.initialize(inscripcion.getProgresos());
+
+    List<ProgresoModulo> progresos = inscripcion.getProgresos();
+    if (progresos.isEmpty()) {
+        return new ProgresoCursoResumen(0.0, 0.0);
     }
+
+    long completados = progresos.stream().filter(ProgresoModulo::isCompletado).count();
+    double promedio = progresos.stream()
+        .filter(p -> p.getCalificacion() != null)
+        .mapToDouble(ProgresoModulo::getCalificacion)
+        .average()
+        .orElse(0.0);
+
+    double porcentaje = (completados * 100.0) / progresos.size();
+
+    return new ProgresoCursoResumen(porcentaje, promedio);
+}
+
 }
 

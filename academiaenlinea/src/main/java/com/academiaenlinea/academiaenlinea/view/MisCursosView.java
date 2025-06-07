@@ -3,8 +3,10 @@ package com.academiaenlinea.academiaenlinea.view;
 import com.academiaenlinea.academiaenlinea.model.Curso;
 import com.academiaenlinea.academiaenlinea.model.Inscripcion;
 import com.academiaenlinea.academiaenlinea.model.Modulo;
+import com.academiaenlinea.academiaenlinea.model.ProgresoModulo;
 import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
+import com.academiaenlinea.academiaenlinea.service.UsuarioService.ProgresoCursoResumen;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -46,12 +48,26 @@ Usuario alumno = usuarioService.buscarAlumnoConInscripciones(userDetails.getUser
             contenidoCurso.add(new Paragraph("Descripción: " + curso.getDescripcion()));
             contenidoCurso.add(new Paragraph("Nivel: " + curso.getNivel()));
             contenidoCurso.add(new Paragraph("Fechas: " + curso.getFechaInicio() + " - " + curso.getFechaFin()));
+ProgresoCursoResumen resumen = usuarioService.calcularResumen(inscripcion.getId());
+
+contenidoCurso.add(new Paragraph("Progreso: " + String.format("%.1f", resumen.porcentajeCompletado()) + "%"));
+contenidoCurso.add(new Paragraph("Promedio de calificaciones: " + String.format("%.1f", resumen.promedioCalificacion())));
 
             VerticalLayout modulosList = new VerticalLayout();
             modulosList.add(new H2("Módulos"));
             for (Modulo modulo : curso.getModulos()) {
-                modulosList.add(new Paragraph(modulo.getOrden() + ". " + modulo.getTitulo()));
-            }
+    ProgresoModulo progreso = inscripcion.getProgresos().stream()
+        .filter(p -> p.getModulo().getId().equals(modulo.getId()))
+        .findFirst().orElse(null);
+
+    String estado = progreso != null && progreso.isCompletado() ? "Completado" : "Incompleto";
+    String nota = progreso != null && progreso.getCalificacion() != null
+        ? String.format(" - Calificación: %.1f", progreso.getCalificacion())
+        : "";
+
+    modulosList.add(new Paragraph(modulo.getOrden() + ". " + modulo.getTitulo() + " - " + estado + nota));
+}
+
 
             contenidoCurso.add(modulosList);
             AccordionPanel panel = accordion.add(curso.getTitulo(), contenidoCurso);

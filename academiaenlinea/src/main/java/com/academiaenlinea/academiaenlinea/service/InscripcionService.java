@@ -6,6 +6,8 @@ import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.repository.InscripcionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.academiaenlinea.academiaenlinea.model.ProgresoModulo;
+import java.util.ArrayList;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,11 +33,21 @@ public class InscripcionService {
                 .fechaInscripcion(LocalDate.now())
                 .build();
 
+                inscripcion.setProgresos(new ArrayList<>());
+
+    curso.getModulos().forEach(modulo -> {
+        ProgresoModulo progreso = new ProgresoModulo();
+        progreso.setModulo(modulo);
+        progreso.setInscripcion(inscripcion);
+        progreso.setCompletado(false);
+        progreso.setCalificacion(null);
+        inscripcion.getProgresos().add(progreso);
+    });
         inscripcionRepository.save(inscripcion);
         return true;
     }
 
     public List<Inscripcion> obtenerInscripcionesPorAlumno(Usuario alumno) {
-        return inscripcionRepository.findByAlumno(alumno);
-    }
+    return inscripcionRepository.findByAlumnoConProgresos(alumno);
+}
 }

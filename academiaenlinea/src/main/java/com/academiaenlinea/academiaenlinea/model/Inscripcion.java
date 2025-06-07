@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -26,4 +28,7 @@ public class Inscripcion {
 
     private Integer progreso = 0; 
     private Double calificacion;
+
+    @OneToMany(mappedBy = "inscripcion", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<ProgresoModulo> progresos = new ArrayList<>();
 }

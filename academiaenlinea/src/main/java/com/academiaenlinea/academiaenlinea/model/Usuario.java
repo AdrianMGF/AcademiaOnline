@@ -35,7 +35,7 @@ public class Usuario{
     @Column(nullable = false)
     private boolean activo = false; 
 
-    @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 private List<Inscripcion> inscripciones = new ArrayList<>();
 
     public enum Rol {
