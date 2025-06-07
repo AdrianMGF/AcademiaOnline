@@ -28,6 +28,6 @@ public class Modulo {
     private Curso curso;
 
 
-    @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 private List<Archivo> archivos = new ArrayList<>();
 }
