@@ -1,5 +1,8 @@
 package com.academiaenlinea.academiaenlinea.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,4 +26,8 @@ public class Modulo {
     @ManyToOne
     @JoinColumn(name = "curso_id")
     private Curso curso;
+
+
+    @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Archivo> archivos = new ArrayList<>();
 }

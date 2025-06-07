@@ -1,5 +1,6 @@
 package com.academiaenlinea.academiaenlinea.view;
 
+import com.academiaenlinea.academiaenlinea.model.Archivo;
 import com.academiaenlinea.academiaenlinea.model.Curso;
 import com.academiaenlinea.academiaenlinea.model.Inscripcion;
 import com.academiaenlinea.academiaenlinea.model.Modulo;
@@ -10,10 +11,15 @@ import com.academiaenlinea.academiaenlinea.service.UsuarioService.ProgresoCursoR
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+
+import java.util.List;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -64,6 +70,17 @@ contenidoCurso.add(new Paragraph("Promedio de calificaciones: " + String.format(
     String nota = progreso != null && progreso.getCalificacion() != null
         ? String.format(" - Calificación: %.1f", progreso.getCalificacion())
         : "";
+        List<Archivo> archivos = modulo.getArchivos();
+if (archivos != null && !archivos.isEmpty()) {
+    VerticalLayout archivosLayout = new VerticalLayout();
+    archivosLayout.add(new H3("Material didáctico:"));
+    for (Archivo archivo : archivos) {
+        Anchor enlace = new Anchor(archivo.getUrl(), archivo.getNombre());
+        enlace.setTarget("_blank"); // abrir en pestaña nueva
+        archivosLayout.add(enlace);
+    }
+    modulosList.add(archivosLayout);
+}
 
     modulosList.add(new Paragraph(modulo.getOrden() + ". " + modulo.getTitulo() + " - " + estado + nota));
 }

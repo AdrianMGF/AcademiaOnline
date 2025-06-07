@@ -1,4 +1,3 @@
-// CursoRepository.java
 package com.academiaenlinea.academiaenlinea.repository;
 
 import com.academiaenlinea.academiaenlinea.model.Curso;
