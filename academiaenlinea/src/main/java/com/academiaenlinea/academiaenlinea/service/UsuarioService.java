@@ -1,19 +1,21 @@
 package com.academiaenlinea.academiaenlinea.service;
 
 import com.academiaenlinea.academiaenlinea.model.Usuario;
+import com.academiaenlinea.academiaenlinea.model.Inscripcion;
 import com.academiaenlinea.academiaenlinea.model.TokenVerificacion;
 import com.academiaenlinea.academiaenlinea.repository.UsuarioRepository;
 import com.academiaenlinea.academiaenlinea.repository.TokenVerificacionRepository;
-import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -95,9 +97,35 @@ public class UsuarioService {
 public Optional<Usuario> findByEmail(String email) {
     return usuarioRepo.findByEmail(email);
 }
+@Transactional(readOnly = true)
 public Usuario buscarPorUsername(String username) {
     return usuarioRepo.findByEmail(username)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + username));
 }
 
+@Transactional(readOnly = true)
+    public List<Inscripcion> obtenerInscripcionesDelUsuario(String email) {
+        Usuario usuario = usuarioRepo.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        usuario.getInscripciones().size();
+
+        return usuario.getInscripciones();
+    }
+
+    @Transactional(readOnly = true)
+    public Usuario buscarAlumnoConInscripciones(String username) {
+        Usuario alumno = usuarioRepo.findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        // Fuerza la carga de las inscripciones (y de los cursos/modulos si son lazy)
+        alumno.getInscripciones().size(); // Inicializa inscripciones
+        alumno.getInscripciones().forEach(i -> {
+            i.getCurso().getTitulo(); // Inicializa curso
+            i.getCurso().getModulos().size(); // Inicializa módulos
+        });
+
+        return alumno;
+    }
 }
+
