@@ -35,6 +35,9 @@ public class Usuario{
     @Column(nullable = false)
     private boolean activo = false; 
 
+
+    private boolean bloqueado = false;
+
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 private List<Inscripcion> inscripciones = new ArrayList<>();
 

@@ -2,6 +2,8 @@ package com.academiaenlinea.academiaenlinea.service;
 
 import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
+
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,9 +23,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario usuario = usuarioService.findByEmail(email)
     .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
-        if (!usuario.isActivo()) {
+        if (usuario.isBloqueado()) {
+            throw new DisabledException("El usuario está bloqueado.");
+        }
+    if (!usuario.isActivo()) {
             throw new UsernameNotFoundException("Usuario no activado");
         }
+        
 
         return User.withUsername(usuario.getEmail())
             .password(usuario.getPassword())  

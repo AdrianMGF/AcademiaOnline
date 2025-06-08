@@ -160,6 +160,32 @@ public ProgresoCursoResumen calcularResumen(Long inscripcionId) {
 
     return new ProgresoCursoResumen(porcentaje, promedio);
 }
+public List<Usuario> obtenerTodos() {
+        return usuarioRepo.findAll();
+    }
+
+    public void guardar(Usuario usuario) {
+        usuarioRepo.save(usuario);
+        String token = UUID.randomUUID().toString();
+        TokenVerificacion verificacion = new TokenVerificacion();
+        verificacion.setToken(token);
+        verificacion.setUsuario(usuario);
+        verificacion.setFechaExpiracion(LocalDateTime.now().plusHours(24));
+        tokenRepo.save(verificacion);
+
+        enviarCorreoActivacion(usuario.getEmail(), token);
+    }
+    public void guardarRol(Usuario usuario) {
+        usuarioRepo.save(usuario);
+        
+    }
+
+    public Optional<Usuario> buscarPorCorreo(String email) {
+        return usuarioRepo.findByEmail(email);
+    }
+    public void eliminar(Usuario usuario) {
+    usuarioRepo.delete(usuario);
+}
 
 }
 
