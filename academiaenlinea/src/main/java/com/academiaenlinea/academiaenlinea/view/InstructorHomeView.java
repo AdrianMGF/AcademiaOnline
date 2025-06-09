@@ -37,7 +37,9 @@ public class InstructorHomeView extends VerticalLayout {
                 getUI().ifPresent(ui -> ui.navigate("cursos")));
         Button gestionUsuarios = new Button("Subir Archivos", e ->
                 getUI().ifPresent(ui -> ui.navigate("instructor/cursos")));
+                Button gestionCuestionarios = new Button("Gestión de Cuestionarios", e ->
+                getUI().ifPresent(ui -> ui.navigate("cuestionarios")));
 
-        add(bienvenida, gestionUsuarios, gestionCursos);
+        add(bienvenida, gestionUsuarios, gestionCursos, gestionCuestionarios);
     }
 }

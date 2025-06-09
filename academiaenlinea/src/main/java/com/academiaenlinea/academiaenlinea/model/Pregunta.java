@@ -17,6 +17,7 @@ import lombok.*;
 public class Pregunta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+     @EqualsAndHashCode.Include
     private Long id;
 
     private String enunciado;
@@ -26,7 +27,7 @@ public class Pregunta {
     private Modulo modulo;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.EAGER)
     private List<Respuesta> respuestas = new ArrayList<>();
 
     private Integer puntaje = 1; 

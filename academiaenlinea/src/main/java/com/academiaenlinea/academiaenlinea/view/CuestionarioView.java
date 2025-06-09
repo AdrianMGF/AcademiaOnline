@@ -38,9 +38,7 @@ private final ComboBox<Curso> cursoComboBox = new ComboBox<>("Selecciona Curso")
     private final ComboBox<Modulo> moduloComboBox = new ComboBox<>("Selecciona Módulo");
     private final Grid<Pregunta> preguntaGrid = new Grid<>(Pregunta.class, false);
     private final Button agregarPreguntaBtn = new Button("Agregar Pregunta");
-    private final Button guardarBtn = new Button("Guardar Cuestionario");
 
-    private final List<Pregunta> preguntasTemp = new ArrayList<>();
 
     public CuestionarioView(CursoService cursoService, ModuloService moduloService, PreguntaService preguntaService) {
 
@@ -52,91 +50,76 @@ private final ComboBox<Curso> cursoComboBox = new ComboBox<>("Selecciona Curso")
         configurarGridPreguntas();
 
         agregarPreguntaBtn.addClickListener(e -> agregarPreguntaForm(null));
-        guardarBtn.addClickListener(e -> guardarCuestionario());
+        
 
         HorizontalLayout seleccionLayout = new HorizontalLayout(cursoComboBox, moduloComboBox);
         seleccionLayout.setSpacing(true);
         seleccionLayout.setAlignItems(Alignment.BASELINE);
 
         add(new H2("Gestión de Cuestionarios"));
-        add(seleccionLayout, preguntaGrid, agregarPreguntaBtn, guardarBtn);
+        add(seleccionLayout, preguntaGrid, agregarPreguntaBtn);
         setPadding(true);
         setSpacing(true);
     }
  private void configurarCombos() {
-        // Curso Combo
         cursoComboBox.setItems(cursoService.listarCursos());
         cursoComboBox.setItemLabelGenerator(Curso::getTitulo);
         cursoComboBox.setWidth("300px");
 
-        // Modulo Combo (depende del curso)
         moduloComboBox.setItemLabelGenerator(Modulo::getTitulo);
         moduloComboBox.setWidth("300px");
 
         cursoComboBox.addValueChangeListener(event -> {
-            Curso cursoSeleccionado = event.getValue();
-            if (cursoSeleccionado != null) {
-                List<Modulo> modulos = moduloService.buscarPorCursoId(cursoSeleccionado.getId());
-                moduloComboBox.setItems(modulos);
-                moduloComboBox.setValue(null);
-                preguntasTemp.clear();
-                preguntaGrid.setItems(preguntasTemp);
-            } else {
-                moduloComboBox.clear();
-                moduloComboBox.setItems(Collections.emptyList());
-            }
-        });
+    Curso cursoSeleccionado = event.getValue();
+    if (cursoSeleccionado != null) {
+        List<Modulo> modulos = moduloService.buscarPorCursoId(cursoSeleccionado.getId());
+        moduloComboBox.setItems(modulos);
+        moduloComboBox.setValue(null);
+        preguntaGrid.setItems(Collections.emptyList()); 
+        
+    } else {
+        moduloComboBox.clear();
+        moduloComboBox.setItems(Collections.emptyList());
+        preguntaGrid.setItems(Collections.emptyList()); 
+    }
+});
 
-        moduloComboBox.addValueChangeListener(event -> {
-            Modulo modulo = event.getValue();
-            if (modulo != null) {
-                cargarPreguntasModulo(modulo);
-            } else {
-                preguntasTemp.clear();
-                preguntaGrid.setItems(preguntasTemp);
-            }
-        });
+       moduloComboBox.addValueChangeListener(event -> {
+    Modulo modulo = event.getValue();
+    if (modulo != null) {
+        List<Pregunta> preguntas = preguntaService.obtenerPreguntasPorModulo(modulo.getId());
+        preguntaGrid.setItems(preguntas);
+    } else {
+        preguntaGrid.setItems(Collections.emptyList());
+    }
+});
     }
     private void configurarGridPreguntas() {
+        preguntaGrid.removeAllColumns();
         preguntaGrid.addColumn(Pregunta::getEnunciado).setHeader("Pregunta").setAutoWidth(true);
 
         preguntaGrid.addComponentColumn(pregunta -> {
             Button editar = new Button("Editar");
            editar.addClickListener(e -> agregarPreguntaForm(pregunta));
             return editar;
-        }).setHeader("Acciones");
+        }).setHeader("Acciones").setAutoWidth(true);
     }
 
     private void cargarPreguntasModulo(Modulo modulo) {
-        preguntasTemp.clear();
-        preguntasTemp.addAll(preguntaService.obtenerPreguntasPorModulo(modulo.getId()));
-        preguntaGrid.setItems(preguntasTemp);
+         List<Pregunta> preguntas = preguntaService.obtenerPreguntasPorModulo(modulo.getId());
+    preguntaGrid.setItems(preguntas);
     }
 
     private void agregarPreguntaForm(Pregunta preguntaExistente) {
         if (moduloComboBox.getValue() == null) {
-            Notification.show("Debes seleccionar un módulo");
-            return;
-        }
-        PreguntaFormDialog dialog = new PreguntaFormDialog(preguntaExistente);
-        dialog.open();
+        Notification.show("Debes seleccionar un módulo");
+        return;
+    }
+    PreguntaFormDialog dialog = new PreguntaFormDialog(preguntaExistente, moduloComboBox.getValue());
+    dialog.open();
     }
 
-    private void guardarCuestionario() {
-        Modulo modulo = moduloComboBox.getValue();
-        if (modulo == null) {
-            Notification.show("Selecciona un módulo");
-            return;
-        }
 
-        for (Pregunta pregunta : preguntasTemp) {
-            pregunta.setModulo(modulo);
-            preguntaService.guardarPreguntaConRespuestas(pregunta);
-        }
-
-        Notification.show("Cuestionario guardado correctamente");
-        cargarPreguntasModulo(modulo);
-    }
 
     private class PreguntaFormDialog extends Dialog {
         private final TextArea enunciadoField = new TextArea("Enunciado");
@@ -146,8 +129,9 @@ private final ComboBox<Curso> cursoComboBox = new ComboBox<>("Selecciona Curso")
         private final Button cancelarBtn = new Button("Cancelar");
 
         private Pregunta pregunta;
-
-        public PreguntaFormDialog(Pregunta preguntaExistente) {
+private final Modulo moduloSeleccionado;
+        public PreguntaFormDialog(Pregunta preguntaExistente, Modulo moduloSeleccionado) {
+            this.moduloSeleccionado = moduloSeleccionado;
             this.pregunta = preguntaExistente != null ? preguntaExistente : new Pregunta();
             setWidth("600px");
             setHeight("500px");
@@ -162,11 +146,10 @@ private final ComboBox<Curso> cursoComboBox = new ComboBox<>("Selecciona Curso")
 
             add(enunciadoField, respuestasLayout, agregarRespuestaBtn, new HorizontalLayout(guardarPreguntaBtn, cancelarBtn));
 
-            if (pregunta.getRespuestas() != null && !pregunta.getRespuestas().isEmpty()) {
-                for (Respuesta r : pregunta.getRespuestas()) {
-                    agregarRespuestaForm(r);
-                }
-            }
+            List<Respuesta> respuestas = pregunta.getRespuestas();
+if (respuestas != null && !respuestas.isEmpty()) {
+    respuestas.forEach(this::agregarRespuestaForm);
+}
         }
 
         private void agregarRespuestaForm(Respuesta respuestaExistente) {
@@ -189,50 +172,55 @@ private final ComboBox<Curso> cursoComboBox = new ComboBox<>("Selecciona Curso")
         }
 
         private void guardarPregunta() {
-            String enunciado = enunciadoField.getValue().trim();
-            if (enunciado.isEmpty()) {
-                Notification.show("El enunciado es obligatorio");
+    String enunciado = enunciadoField.getValue().trim();
+    if (enunciado.isEmpty()) {
+        Notification.show("El enunciado es obligatorio");
+        return;
+    }
+
+    List<Respuesta> respuestas = new ArrayList<>();
+    int correctas = 0;
+
+    for (var comp : respuestasLayout.getChildren().toList()) {
+        if (comp instanceof HorizontalLayout fila) {
+            TextField texto = (TextField) fila.getComponentAt(0);
+            RadioButtonGroup<Boolean> correcta = (RadioButtonGroup<Boolean>) fila.getComponentAt(1);
+
+            String textoResp = texto.getValue().trim();
+            if (textoResp.isEmpty()) {
+                Notification.show("Todas las respuestas deben tener texto");
                 return;
             }
 
-            List<Respuesta> respuestas = new ArrayList<>();
-            int correctas = 0;
-            for (var comp : respuestasLayout.getChildren().toList()) {
-                if (comp instanceof HorizontalLayout fila) {
-                    TextField texto = (TextField) fila.getComponentAt(0);
-                    RadioButtonGroup<Boolean> correcta = (RadioButtonGroup<Boolean>) fila.getComponentAt(1);
+            boolean esCorrecta = Boolean.TRUE.equals(correcta.getValue());
+            if (esCorrecta) correctas++;
 
-                    String textoResp = texto.getValue().trim();
-                    if (textoResp.isEmpty()) {
-                        Notification.show("Todas las respuestas deben tener texto");
-                        return;
-                    }
-                    boolean esCorrecta = correcta.getValue() != null && correcta.getValue();
-                    if (esCorrecta) correctas++;
-
-                    Respuesta r = Respuesta.builder()
-                            .texto(textoResp)
-                            .correcta(esCorrecta)
-                            .pregunta(pregunta)
-                            .build();
-                    respuestas.add(r);
-                }
-            }
-
-            if (correctas == 0) {
-                Notification.show("Debe marcar al menos una respuesta como correcta");
-                return;
-            }
-
-            pregunta.setEnunciado(enunciado);
-            pregunta.setRespuestas(respuestas);
-
-            if (!preguntasTemp.contains(pregunta)) {
-                preguntasTemp.add(pregunta);
-            }
-            preguntaGrid.getDataProvider().refreshAll();
-            this.close();
+            Respuesta r = Respuesta.builder()
+                    .texto(textoResp)
+                    .correcta(esCorrecta)
+                    .pregunta(pregunta)
+                    .build();
+            respuestas.add(r);
         }
+    }
+
+    if (correctas == 0) {
+        Notification.show("Debe marcar al menos una respuesta como correcta");
+        return;
+    }
+
+    pregunta.setEnunciado(enunciado);
+    pregunta.setRespuestas(respuestas);
+    pregunta.setModulo(moduloSeleccionado);
+
+    preguntaService.guardarPreguntaConRespuestas(pregunta);
+
+    cargarPreguntasModulo(moduloSeleccionado);
+
+    Notification.show("Pregunta guardada correctamente");
+    this.close();
+}
+
     }
 }
 

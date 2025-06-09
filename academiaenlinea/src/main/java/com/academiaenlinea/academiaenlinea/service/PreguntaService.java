@@ -22,7 +22,6 @@ public class PreguntaService {
     public Pregunta guardarPreguntaConRespuestas(Pregunta pregunta) {
         Pregunta guardada = preguntaRepository.save(pregunta);
 
-        // Asociar la pregunta a cada respuesta y guardarlas
         if (pregunta.getRespuestas() != null) {
             pregunta.getRespuestas().forEach(respuesta -> {
                 respuesta.setPregunta(guardada);

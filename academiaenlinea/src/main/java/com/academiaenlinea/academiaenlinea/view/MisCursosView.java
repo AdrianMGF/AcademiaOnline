@@ -4,16 +4,26 @@ import com.academiaenlinea.academiaenlinea.model.Archivo;
 import com.academiaenlinea.academiaenlinea.model.Curso;
 import com.academiaenlinea.academiaenlinea.model.Inscripcion;
 import com.academiaenlinea.academiaenlinea.model.Modulo;
+import com.academiaenlinea.academiaenlinea.model.Pregunta;
 import com.academiaenlinea.academiaenlinea.model.ProgresoModulo;
+import com.academiaenlinea.academiaenlinea.model.Respuesta;
 import com.academiaenlinea.academiaenlinea.model.Usuario;
+import com.academiaenlinea.academiaenlinea.service.PreguntaService;
+import com.academiaenlinea.academiaenlinea.service.ProgresoModuloService;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService.ProgresoCursoResumen;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.Route;
@@ -23,7 +33,9 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,9 +45,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class MisCursosView extends VerticalLayout {
 
     private final UsuarioService usuarioService;
+      private final PreguntaService preguntaService;
+    private final ProgresoModuloService progresoModuloService;
 
-    public MisCursosView(UsuarioService usuarioService) {
+    public MisCursosView(UsuarioService usuarioService,
+                         PreguntaService preguntaService,
+                         ProgresoModuloService progresoModuloService) {
         this.usuarioService = usuarioService;
+        this.preguntaService = preguntaService;
+        this.progresoModuloService = progresoModuloService;
         setPadding(true);
         setSpacing(true);
 
@@ -76,24 +94,41 @@ contenidoCurso.add(new Paragraph("Promedio de calificaciones: " + String.format(
         ? String.format(" - Calificación: %.1f", progreso.getCalificacion())
         : "";
 
-    Paragraph p = new Paragraph(modulo.getOrden() + ". " + modulo.getTitulo() + " - " + estado + nota);
+    HorizontalLayout filaModulo = new HorizontalLayout();
+filaModulo.setAlignItems(Alignment.CENTER);
 
-    if (!modulo.getArchivos().isEmpty()) {
-        for (Archivo archivo : modulo.getArchivos()) {
-            Anchor link = new Anchor(new StreamResource(archivo.getNombre(), () -> {
-                try {
-                    return new FileInputStream(archivo.getUrl());
-                } catch (FileNotFoundException e) {
-                    Notification.show("Archivo no encontrado");
-                    return null;
-                }
-            }), archivo.getNombre());
+Paragraph descripcionModulo = new Paragraph(modulo.getOrden() + ". " + modulo.getTitulo() + " - " + estado + nota);
+filaModulo.add(descripcionModulo);
 
-            link.setTarget("_blank");
-            p.add(link);
-        }
+if (!modulo.getArchivos().isEmpty()) {
+    for (Archivo archivo : modulo.getArchivos()) {
+        Anchor link = new Anchor(new StreamResource(archivo.getNombre(), () -> {
+            try {
+                return new FileInputStream(archivo.getUrl());
+            } catch (FileNotFoundException e) {
+                Notification.show("Archivo no encontrado");
+                return null;
+            }
+        }), archivo.getNombre());
+        link.setTarget("_blank");
+        filaModulo.add(link);
     }
-    modulosList.add(p);
+}
+List<Pregunta> preguntas = modulo.getPreguntas(); 
+
+if (preguntas != null && !preguntas.isEmpty()) {
+Button resolverCuestionarioBtn = new Button("Resolver cuestionario");
+resolverCuestionarioBtn.addClickListener(ev -> {
+    CuestionarioDialog dialog = new CuestionarioDialog(modulo, inscripcion);
+    dialog.open();
+});
+if (progreso == null || !progreso.isCompletado()) {
+    filaModulo.add(resolverCuestionarioBtn);
+}
+}
+
+modulosList.add(filaModulo);
+
 }
 
 
@@ -103,4 +138,93 @@ contenidoCurso.add(new Paragraph("Promedio de calificaciones: " + String.format(
 
         add(accordion);
     }
+     private class CuestionarioDialog extends Dialog {
+        private final Modulo modulo;
+        private final Inscripcion inscripcion;
+        private final List<Pregunta> preguntas;
+
+        private final Map<Long, Long> respuestasSeleccionadas = new HashMap<>();
+
+        public CuestionarioDialog(Modulo modulo, Inscripcion inscripcion) {
+            this.modulo = modulo;
+            this.inscripcion = inscripcion;
+            this.preguntas = preguntaService.obtenerPreguntasPorModulo(modulo.getId());
+
+            setWidth("700px");
+            setHeight("600px");
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.setPadding(true);
+            layout.setSpacing(true);
+
+            Label titulo = new Label("Cuestionario: " + modulo.getTitulo());
+            layout.add(titulo);
+
+            for (Pregunta pregunta : preguntas) {
+                VerticalLayout preguntaLayout = new VerticalLayout();
+                preguntaLayout.add(new Paragraph(pregunta.getEnunciado()));
+
+                RadioButtonGroup<Respuesta> opciones = new RadioButtonGroup<>();
+                opciones.setItems(pregunta.getRespuestas());
+                opciones.setItemLabelGenerator(Respuesta::getTexto);
+                opciones.addValueChangeListener(event -> {
+                    if (event.getValue() != null) {
+                        respuestasSeleccionadas.put(pregunta.getId(), event.getValue().getId());
+                    }
+                });
+
+                preguntaLayout.add(opciones);
+                layout.add(preguntaLayout);
+            }
+
+            Button resolverBtn = new Button("Resolver");
+            resolverBtn.addClickListener(e -> {
+                if (respuestasSeleccionadas.size() < preguntas.size()) {
+                    Notification.show("Debes responder todas las preguntas");
+                    return;
+                }
+
+                int correctas = 0;
+                for (Pregunta pregunta : preguntas) {
+                    Long respuestaIdSeleccionada = respuestasSeleccionadas.get(pregunta.getId());
+                    if (respuestaIdSeleccionada != null) {
+                        for (Respuesta r : pregunta.getRespuestas()) {
+                            if (r.getId().equals(respuestaIdSeleccionada) && r.isCorrecta()) {
+                                correctas++;
+                            }
+                        }
+                    }
+                }
+
+                double porcentaje = ((double) correctas / preguntas.size()) * 100;
+
+                ProgresoModulo progresoModulo = inscripcion.getProgresos().stream()
+                    .filter(p -> p.getModulo().getId().equals(modulo.getId()))
+                    .findFirst().orElse(null);
+
+                if (progresoModulo == null) {
+                    progresoModulo = new ProgresoModulo();
+                    progresoModulo.setInscripcion(inscripcion);
+                    progresoModulo.setModulo(modulo);
+                    inscripcion.getProgresos().add(progresoModulo);
+                }
+
+                progresoModulo.setCalificacion(porcentaje);
+                progresoModulo.setCompletado(true);
+                progresoModuloService.guardar(progresoModulo); 
+
+                Notification.show("Cuestionario resuelto. Puntuación: " + String.format("%.1f", porcentaje) + "%");
+                close();
+
+                UI.getCurrent().getPage().reload();
+                removeAll();
+                
+            });
+
+            layout.add(resolverBtn);
+            add(layout);
+        }
+    }
+    
 }
+

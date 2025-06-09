@@ -37,7 +37,8 @@ public class AdminHomeView extends VerticalLayout {
 
         Button gestionCursos = new Button("Gestión de Cursos", e ->
                 getUI().ifPresent(ui -> ui.navigate("cursos")));
-
-        add(bienvenida, gestionUsuarios, gestionCursos);
+Button gestionCuestionarios = new Button("Gestión de Cuestionarios", e ->
+                getUI().ifPresent(ui -> ui.navigate("cuestionarios")));
+        add(bienvenida, gestionUsuarios, gestionCursos, gestionCuestionarios);
     }
 }
