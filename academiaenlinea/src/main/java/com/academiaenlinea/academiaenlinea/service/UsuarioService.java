@@ -75,6 +75,12 @@ public class UsuarioService {
         mensaje.setText("Haz clic en este enlace para activar tu cuenta:\n" + url);
         mailSender.send(mensaje);
     }
+    public void enviarCorreoConTexto(String email, String text) {
+        SimpleMailMessage mensaje = new SimpleMailMessage();
+        mensaje.setTo(email);
+        mensaje.setSubject(text);
+        mailSender.send(mensaje);
+    }
 
     public boolean activarUsuario(String token) {
         Optional<TokenVerificacion> opt = tokenRepo.findByToken(token);

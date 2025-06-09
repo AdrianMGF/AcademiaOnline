@@ -19,6 +19,7 @@ public class InscripcionService {
 
     private final InscripcionRepository inscripcionRepository;
      private final CursoRepository cursoRepository;
+     private final UsuarioService usuarioService;
 
     public boolean inscribirAlumno(Usuario alumno, Curso curso) {
         if (inscripcionRepository.existsByAlumnoAndCurso(alumno, curso)) {
@@ -50,6 +51,7 @@ public class InscripcionService {
         curso.setCapacidad(curso.getCapacidad() - 1);
         cursoRepository.save(curso);
     }
+    usuarioService.enviarCorreoConTexto(alumno.getEmail(), "Te has inscrito en el curso " + curso.getTitulo());
         return true;
     }
 
