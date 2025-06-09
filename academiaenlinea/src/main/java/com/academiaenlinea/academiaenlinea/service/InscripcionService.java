@@ -3,6 +3,7 @@ package com.academiaenlinea.academiaenlinea.service;
 import com.academiaenlinea.academiaenlinea.model.Curso;
 import com.academiaenlinea.academiaenlinea.model.Inscripcion;
 import com.academiaenlinea.academiaenlinea.model.Usuario;
+import com.academiaenlinea.academiaenlinea.repository.CursoRepository;
 import com.academiaenlinea.academiaenlinea.repository.InscripcionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 public class InscripcionService {
 
     private final InscripcionRepository inscripcionRepository;
+     private final CursoRepository cursoRepository;
 
     public boolean inscribirAlumno(Usuario alumno, Curso curso) {
         if (inscripcionRepository.existsByAlumnoAndCurso(alumno, curso)) {
@@ -44,6 +46,10 @@ public class InscripcionService {
         inscripcion.getProgresos().add(progreso);
     });
         inscripcionRepository.save(inscripcion);
+        if (curso.getCapacidad() != null) {
+        curso.setCapacidad(curso.getCapacidad() - 1);
+        cursoRepository.save(curso);
+    }
         return true;
     }
 

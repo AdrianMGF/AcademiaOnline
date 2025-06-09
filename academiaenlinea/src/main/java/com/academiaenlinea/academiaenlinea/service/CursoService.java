@@ -27,7 +27,9 @@ public class CursoService {
 }
 
 public List<Curso> listarCursosPublicados() {
-    return cursoRepository.findByEstado(Curso.EstadoCurso.PUBLICADO);
+    return cursoRepository.findByEstado(Curso.EstadoCurso.PUBLICADO).stream()
+            .filter(curso -> curso.getCapacidad() != null && curso.getCapacidad() > 0)
+            .toList();
 }
 
     public List<Curso> listarCursos() {

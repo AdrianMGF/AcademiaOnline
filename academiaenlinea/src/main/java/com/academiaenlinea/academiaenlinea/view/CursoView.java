@@ -9,7 +9,9 @@ import com.academiaenlinea.academiaenlinea.service.UsuarioService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -50,7 +52,10 @@ private final TextArea descripcionModulo = new TextArea("Descripción");
 private final VerticalLayout formularioLayout = new VerticalLayout();
 private final TextField filtroTitulo = new TextField("Buscar por título");
 private final ComboBox<Curso.EstadoCurso> filtroEstado = new ComboBox<>("Filtrar por estado");
-private final Button agregarCursoBtn = new Button("Agregar");
+private final Button agregarCursoBtn = new Button("Agregar Curso");
+private final Dialog formularioDialog = new Dialog();
+private final IntegerField capacidad = new IntegerField("Capacidad");
+private final H2 tituloVista = new H2();
 
 
     private final List<Modulo> modulosTemp = new ArrayList<>();
@@ -70,9 +75,9 @@ private final InscripcionService inscripcionService;
         nivel.setItems(Curso.Nivel.values());
         estado.setItems(Curso.EstadoCurso.values());
 
-        HorizontalLayout botones = new HorizontalLayout(agregarModuloBtn, guardarBtn, eliminarBtn);
-
-        grid.setColumns("titulo", "nivel", "estado", "fechaInicio", "fechaFin");
+        HorizontalLayout botones = new HorizontalLayout(agregarModuloBtn, guardarBtn, eliminarBtn, inscribirseBtn);
+        add(tituloVista);
+        grid.setColumns("titulo", "nivel", "estado", "fechaInicio", "fechaFin","capacidad");
         grid.asSingleSelect().addValueChangeListener(e -> cargarCurso(e.getValue()));
         String rol = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
             .stream()
@@ -81,20 +86,28 @@ private final InscripcionService inscripcionService;
             .orElse("");
 
         if (rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")) {
+            tituloVista.setText("Gestión de Cursos");
             add(agregarCursoBtn);
 agregarCursoBtn.addClickListener(e -> {
     limpiarFormulario();  
-    formularioLayout.setVisible(true); 
+    formularioLayout.setVisible(true);
+    formularioDialog.open();
 });
             grid.setItems(cursoService.listarTodosLosCursos()); 
             agregarModuloBtn.setVisible(true);
             guardarBtn.setVisible(true);
             eliminarBtn.setVisible(true);
+            inscribirseBtn.setVisible(false);
         } else if (rol.equals("ROLE_ALUMNO")) {
-            grid.setItems(cursoService.listarCursosPublicados());
+            tituloVista.setText("Catálogo de Cursos Disponibles");
+            grid.setItems(cursoService.listarCursosPublicados()
+    .stream()
+    .filter(c -> c.getCapacidad() != null && c.getCapacidad() > 0)
+    .toList());
             agregarModuloBtn.setVisible(false);
             guardarBtn.setVisible(false);
             eliminarBtn.setVisible(false);
+            inscribirseBtn.setVisible(true);
         inscribirseBtn.addClickListener(e -> {
     Curso cursoSeleccionado = grid.asSingleSelect().getValue();
     if (cursoSeleccionado == null) {
@@ -109,14 +122,14 @@ boolean exito = inscripcionService.inscribirAlumno(alumno, cursoSeleccionado);
 
 if (exito) {
     Notification.show("Inscripción exitosa");
+    grid.setItems(cursoService.listarCursosPublicados());
+    formularioDialog.close();
 } else {
     Notification.show("Ya estás inscrito o no hay cupo");
 }
 });
 
-            if (rol.equals("ROLE_ALUMNO")) {
-                add(inscribirseBtn);
-            }}
+    }
         boolean esAlumno = rol.equals("ROLE_ALUMNO");
         titulo.setReadOnly(esAlumno);
         descripcion.setReadOnly(esAlumno);
@@ -124,6 +137,7 @@ if (exito) {
         fechaFin.setReadOnly(esAlumno);
         nivel.setReadOnly(esAlumno);
         estado.setReadOnly(esAlumno);
+        capacidad.setReadOnly(esAlumno);
 
         modulosLayout.setEnabled(!esAlumno);
                 agregarModuloBtn.addClickListener(e -> agregarModuloForm(null));
@@ -133,13 +147,13 @@ if (exito) {
                 cursoService.eliminarCurso(cursoActual.getId());
                 Notification.show("Curso eliminado");
                 limpiarFormulario();
-                actualizarCursosUsuarioActual(); // Refresca el grid
+                actualizarCursosUsuarioActual(); 
             } else {
                 Notification.show("No hay curso seleccionado para eliminar");
             }
         });
 
-        formularioLayout.add(titulo, descripcion, fechaInicio, fechaFin, nivel, estado, modulosLayout, botones);
+        formularioLayout.add(titulo, descripcion, fechaInicio, fechaFin, nivel, estado,capacidad, modulosLayout, botones);
 
         formularioLayout.setVisible(false); 
         filtroTitulo.setPlaceholder("Título...");
@@ -157,7 +171,8 @@ if (exito) {
             filtroEstado.setVisible(false);
         }
         add(filtrosLayout);
-        add(grid, formularioLayout);    
+        add(grid); 
+formularioDialog.add(formularioLayout); 
 }
 
 private void filtrarCursos() {
@@ -169,11 +184,12 @@ private void filtrarCursos() {
         .findFirst()
         .map(auth -> auth.getAuthority())
         .orElse("");
-
-    List<Curso> cursos = rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")
-        ? cursoService.listarTodosLosCursos()
-        : cursoService.listarCursosPublicados();
-
+List<Curso> cursos;
+if (rol.equals("ROLE_ADMIN") || rol.equals("ROLE_INSTRUCTOR")) {
+    cursos = cursoService.listarTodosLosCursos();
+} else {
+    cursos = cursoService.listarCursosPublicados();
+}
     List<Curso> filtrados = cursos.stream()
         .filter(c -> (tituloFiltro.isEmpty() || c.getTitulo().toLowerCase().contains(tituloFiltro)))
         .filter(c -> (estadoFiltro == null || c.getEstado() == estadoFiltro))
@@ -185,22 +201,15 @@ private void filtrarCursos() {
     private void actualizarCursosUsuarioActual() {
      grid.setItems(cursoService.listarTodosLosCursos());
     }
-    private void agregarBotonInscribirse() {
-    Button inscribirseBtn = new Button("Inscribirse");
-    inscribirseBtn.addClickListener(e -> {
-        Curso cursoSeleccionado = grid.asSingleSelect().getValue();
-        if (cursoSeleccionado == null) {
-            Notification.show("Selecciona un curso para inscribirte");
-            return;
-        }
-        // Aquí debes implementar la lógica de inscripción (puede ser llamada a un servicio)
-        Notification.show("Te has inscrito en el curso: " + cursoSeleccionado.getTitulo());
-    });
-
-    add(inscribirseBtn);
-}
+    
 
     private void agregarModuloForm(Modulo moduloExistente) {
+         String rol = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+        .stream()
+        .findFirst()
+        .map(auth -> auth.getAuthority())
+        .orElse("");
+    boolean esAlumno = rol.equals("ROLE_ALUMNO");
     TextField tituloModuloField = new TextField("Título del módulo");
     IntegerField ordenModuloField = new IntegerField("Orden");
     TextArea descripcionModuloField = new TextArea("Descripción");
@@ -210,7 +219,13 @@ private void filtrarCursos() {
     descripcionModuloField.setWidth("300px");
 
     Button eliminar = new Button("Eliminar");
-    HorizontalLayout moduloRow = new HorizontalLayout(tituloModuloField, ordenModuloField, descripcionModuloField, eliminar);
+    HorizontalLayout moduloRow;
+if (!esAlumno) {
+    moduloRow = new HorizontalLayout(tituloModuloField, ordenModuloField, descripcionModuloField, eliminar);
+    eliminar.addClickListener(e -> modulosLayout.remove(moduloRow));
+} else {
+    moduloRow = new HorizontalLayout(tituloModuloField, ordenModuloField, descripcionModuloField);
+}
     moduloRow.setWidthFull();
 
     if (moduloExistente != null) {
@@ -238,6 +253,7 @@ private void filtrarCursos() {
         fechaFin.setValue(curso.getFechaFin());
         nivel.setValue(curso.getNivel());
         estado.setValue(curso.getEstado());
+        capacidad.setValue(curso.getCapacidad());
 
         modulosLayout.removeAll();
         modulosTemp.clear();
@@ -247,6 +263,7 @@ private void filtrarCursos() {
             modulosTemp.add(m);
         }
         eliminarBtn.setEnabled(true);
+        formularioDialog.open();
     }
 
     private void guardarCurso() {
@@ -262,6 +279,7 @@ private void filtrarCursos() {
         curso.setFechaFin(fechaFin.getValue());
         curso.setNivel(nivel.getValue());
         curso.setEstado(estado.getValue());
+        curso.setCapacidad(capacidad.getValue());
 
         List<Modulo> modulosActualizados = new ArrayList<>();
 
@@ -294,6 +312,7 @@ curso.setModulos(modulosActualizados);
 
        
         cursoService.crearOCrearCurso(curso);
+        formularioDialog.close();
         Notification.show("Curso guardado exitosamente");
         limpiarFormulario();
 actualizarCursosSegunRol();    
@@ -306,6 +325,7 @@ actualizarCursosSegunRol();
         fechaFin.setValue(null);
         nivel.clear();
         estado.clear();
+        capacidad.clear();
         modulosLayout.removeAll();
         modulosTemp.clear();
         cursoActual = null;

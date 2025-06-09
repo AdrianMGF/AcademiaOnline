@@ -183,7 +183,9 @@ public List<Usuario> obtenerTodos() {
     public Optional<Usuario> buscarPorCorreo(String email) {
         return usuarioRepo.findByEmail(email);
     }
+     @Transactional
     public void eliminar(Usuario usuario) {
+    tokenRepo.deleteByUsuario(usuario);
     usuarioRepo.delete(usuario);
 }
 

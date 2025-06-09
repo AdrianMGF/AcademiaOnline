@@ -62,12 +62,11 @@ public class InstructorCursosView extends VerticalLayout {
     }
 
     private void configurarGrids() {
-        // Cursos
         cursosGrid.addColumn(Curso::getTitulo).setHeader("Curso");
         cursosGrid.addColumn(Curso::getNivel).setHeader("Nivel");
         cursosGrid.setHeight("200px");
 
-        List<Curso> cursos = cursoRepo.findAll(); // aquí podrías filtrar por instructor
+        List<Curso> cursos = cursoRepo.findAll(); 
         cursosGrid.setItems(cursos);
 
         cursosGrid.asSingleSelect().addValueChangeListener(e -> {
@@ -80,7 +79,7 @@ public class InstructorCursosView extends VerticalLayout {
             }
         });
 
-        // Módulos
+        
         modulosGrid.addColumn(Modulo::getOrden).setHeader("Orden");
         modulosGrid.addColumn(Modulo::getTitulo).setHeader("Módulo");
         modulosGrid.setHeight("200px");
@@ -101,20 +100,16 @@ public class InstructorCursosView extends VerticalLayout {
     subirArchivoBtn = new Button("Subir archivo");
     subirArchivoBtn.setEnabled(false);
 
-    // Variables para guardar datos del archivo subido
     final String[] nombreArchivoSubido = {null};
     final String[] tipoArchivoSubido = {null};
 
-    // Cuando el archivo se sube con éxito, guardamos su info
     upload.addSucceededListener(event -> {
         nombreArchivoSubido[0] = event.getFileName();
         tipoArchivoSubido[0] = event.getMIMEType();
 
-        // Habilitar el botón sólo si hay módulo seleccionado
         subirArchivoBtn.setEnabled(moduloSeleccionado != null);
     });
 
-    // Si cambia el módulo seleccionado, habilitar o deshabilitar botón según si hay archivo cargado
     modulosGrid.asSingleSelect().addValueChangeListener(event -> {
         moduloSeleccionado = event.getValue();
         subirArchivoBtn.setEnabled(moduloSeleccionado != null && nombreArchivoSubido[0] != null);
@@ -140,10 +135,8 @@ public class InstructorCursosView extends VerticalLayout {
 
             Notification.show("Archivo subido con éxito");
 
-            // Limpiar la selección de archivo
             upload.getElement().callJsFunction("clear");
 
-            // Reset variables y botón
             nombreArchivoSubido[0] = null;
             tipoArchivoSubido[0] = null;
             subirArchivoBtn.setEnabled(false);

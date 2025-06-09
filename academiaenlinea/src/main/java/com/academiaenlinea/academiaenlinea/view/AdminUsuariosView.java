@@ -56,22 +56,11 @@ HorizontalLayout header = new HorizontalLayout(titulo, addButton);
     }
 
     private void configurarGrid() {
-        grid.addColumn(Usuario::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Usuario::getNombreCompleto).setHeader("Nombre");
-        grid.addColumn(Usuario::getEmail).setHeader("Correo");
-        grid.addColumn(usuario -> usuario.getRol().name()).setHeader("Rol");
-        grid.addColumn(usuario -> usuario.isBloqueado() ? "Sí" : "No").setHeader("Bloqueado");
-
-        grid.addComponentColumn(usuario -> {
-            Button bloquearBtn = new Button(usuario.isBloqueado() ? "Desbloquear" : "Bloquear", e -> {
-                usuario.setBloqueado(!usuario.isBloqueado());
-                usuarioService.guardar(usuario);
-                cargarUsuarios();
-            });
-            return bloquearBtn;
-        });
-
-        grid.addComponentColumn(usuario -> {
+        grid.addColumn(Usuario::getId).setHeader("ID").setSortable(true).setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(Usuario::getNombreCompleto).setHeader("Nombre").setSortable(true).setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(Usuario::getEmail).setHeader("Correo").setSortable(true).setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(usuario -> usuario.isBloqueado() ? "Sí" : "No").setSortable(true).setHeader("Bloqueado").setAutoWidth(true).setFlexGrow(0);
+grid.addComponentColumn(usuario -> {
     HorizontalLayout layout = new HorizontalLayout();
     layout.setSpacing(true);
     layout.setAlignItems(Alignment.CENTER);
@@ -91,7 +80,17 @@ HorizontalLayout header = new HorizontalLayout(titulo, addButton);
 
     layout.add(rolCombo, cambiarRolBtn);
     return layout;
-});
+}).setAutoWidth(true).setFlexGrow(0);
+        grid.addComponentColumn(usuario -> {
+            Button bloquearBtn = new Button(usuario.isBloqueado() ? "Desbloquear" : "Bloquear", e -> {
+                usuario.setBloqueado(!usuario.isBloqueado());
+                usuarioService.guardarRol(usuario);
+                cargarUsuarios();
+            });
+            return bloquearBtn;
+        });
+
+        
         grid.addComponentColumn(usuario -> {
             Button eliminarBtn = new Button("Eliminar", e -> {
                 usuarioService.eliminar(usuario);

@@ -24,7 +24,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-        String correo = authentication.getName(); // El username es el correo
+        String correo = authentication.getName(); 
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorCorreo(correo);
 
         if (usuarioOpt.isPresent()) {
@@ -34,13 +34,13 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                 case ADMIN -> "/admin";
                 case INSTRUCTOR -> "/instructor";
                 case ALUMNO -> "/alumno";
-                default -> "/login?error"; // En caso de que el rol no esté definido
+                default -> "/login?error"; 
             };
 
             response.sendRedirect(redirectUrl);
 
         } else {
-            response.sendRedirect("/login?error"); // Usuario no encontrado
+            response.sendRedirect("/login?error"); 
         }
     }
 }

@@ -78,7 +78,6 @@ contenidoCurso.add(new Paragraph("Promedio de calificaciones: " + String.format(
 
     Paragraph p = new Paragraph(modulo.getOrden() + ". " + modulo.getTitulo() + " - " + estado + nota);
 
-    // Mostrar enlaces a archivos
     if (!modulo.getArchivos().isEmpty()) {
         for (Archivo archivo : modulo.getArchivos()) {
             Anchor link = new Anchor(new StreamResource(archivo.getNombre(), () -> {

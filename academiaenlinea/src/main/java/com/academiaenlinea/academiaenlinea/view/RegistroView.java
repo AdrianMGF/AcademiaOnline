@@ -3,11 +3,13 @@ package com.academiaenlinea.academiaenlinea.view;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -30,7 +32,24 @@ public class RegistroView extends VerticalLayout {
     public RegistroView(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
 
-        add(nombreCompleto, email, password, confirmarPassword, registrar);
+        addClassNames(
+            LumoUtility.Display.FLEX,
+            LumoUtility.FlexDirection.COLUMN,
+            LumoUtility.JustifyContent.CENTER,
+            LumoUtility.AlignItems.CENTER
+        );
+        setSizeFull();
+        setPadding(true);
+
+        H1 titulo = new H1("Registro");
+        add(titulo);
+
+        FormLayout formLayout = new FormLayout();
+        formLayout.add(nombreCompleto, email, password, confirmarPassword, registrar);
+        formLayout.setWidth("320px"); 
+        setAlignSelf(Alignment.CENTER, formLayout); 
+
+        add(formLayout);
 
         registrar.addClickListener(event -> {
             if (nombreCompleto.isEmpty() || email.isEmpty() || password.isEmpty() || confirmarPassword.isEmpty()) {

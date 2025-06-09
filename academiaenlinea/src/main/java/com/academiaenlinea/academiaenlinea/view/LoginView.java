@@ -43,6 +43,11 @@ public class LoginView extends VerticalLayout {
 
         login.setAction("login"); 
         add(login);
+
+        Button registroBtn = new Button("¿No tienes cuenta? Regístrate aquí", e -> {
+            UI.getCurrent().navigate("registro");
+        });
+        add(registroBtn);
     }
 
     
