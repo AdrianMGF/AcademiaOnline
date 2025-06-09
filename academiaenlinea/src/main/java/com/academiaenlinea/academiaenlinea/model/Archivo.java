@@ -16,9 +16,9 @@ public class Archivo {
 
     private String nombre;
 
-    private String tipo; // MIME type o extensión, ej. "application/pdf", "video/mp4"
+    private String tipo; 
 
-    private String url; // Ruta donde se almacena o URL externa
+    private String url; 
 
     @ManyToOne
     private Modulo modulo;

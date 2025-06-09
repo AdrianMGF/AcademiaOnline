@@ -1,5 +1,6 @@
 package com.academiaenlinea.academiaenlinea.view;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,7 +13,6 @@ import jakarta.annotation.security.PermitAll;
 public class MainView extends VerticalLayout {
 
     public MainView() {
-        Button button = new Button("Haz clic aquí", e -> Notification.show("¡Hola, Vaadin y Spring Boot!"));
-        add(button);
+       UI.getCurrent().navigate("login");
     }
 }
