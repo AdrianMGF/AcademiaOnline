@@ -54,5 +54,6 @@ public List<Curso> listarCursosPublicados() {
                 .filter(u -> u.getRol().equals("INSTRUCTOR") || u.getRol().equals("ADMIN"));
     }
     
+    
 }
 

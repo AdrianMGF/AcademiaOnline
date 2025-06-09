@@ -30,4 +30,7 @@ public class Modulo {
 
     @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 private List<Archivo> archivos = new ArrayList<>();
+
+@OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+private List<Pregunta> preguntas = new ArrayList<>();
 }
