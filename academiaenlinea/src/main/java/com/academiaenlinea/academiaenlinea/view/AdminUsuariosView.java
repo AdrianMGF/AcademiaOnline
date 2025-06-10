@@ -15,6 +15,7 @@ import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.security.RolesAllowed;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -53,6 +54,11 @@ HorizontalLayout header = new HorizontalLayout(titulo, addButton);
         add(grid);
 
         cargarUsuarios();
+        Button backButton = new Button("Volver");
+        backButton.addClickListener(event -> {
+            UI.getCurrent().getPage().getHistory().back();
+        });
+        add(backButton);
     }
 
     private void configurarGrid() {

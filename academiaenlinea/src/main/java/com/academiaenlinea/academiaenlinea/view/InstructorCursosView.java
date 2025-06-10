@@ -10,6 +10,7 @@ import com.academiaenlinea.academiaenlinea.model.Modulo;
 import com.academiaenlinea.academiaenlinea.repository.CursoRepository;
 import com.academiaenlinea.academiaenlinea.service.ArchivoService;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
@@ -59,6 +60,11 @@ public class InstructorCursosView extends VerticalLayout {
         crearComponenteSubida();
 
         add(subirArchivoBtn, upload);
+        Button backButton = new Button("Volver");
+        backButton.addClickListener(event -> {
+            UI.getCurrent().getPage().getHistory().back();
+        });
+        add(backButton);
     }
 
     private void configurarGrids() {

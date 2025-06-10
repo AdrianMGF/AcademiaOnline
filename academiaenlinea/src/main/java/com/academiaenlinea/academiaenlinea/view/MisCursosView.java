@@ -137,6 +137,11 @@ modulosList.add(filaModulo);
         }
 
         add(accordion);
+        Button backButton = new Button("Volver");
+        backButton.addClickListener(event -> {
+            UI.getCurrent().getPage().getHistory().back();
+        });
+        add(backButton);
     }
      private class CuestionarioDialog extends Dialog {
         private final Modulo modulo;

@@ -1,6 +1,7 @@
 package com.academiaenlinea.academiaenlinea.view;
 
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
@@ -74,6 +75,10 @@ public class RegistroView extends VerticalLayout {
                 Notification.show(e.getMessage());
             }
         });
+        Button registroBtn = new Button("¿Ya tienes cuenta? Inicia sesion aqui", e -> {
+            UI.getCurrent().navigate("login");
+        });
+        add(registroBtn);
     }
 
     private void limpiar() {

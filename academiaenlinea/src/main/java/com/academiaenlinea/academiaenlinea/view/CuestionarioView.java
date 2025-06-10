@@ -11,6 +11,7 @@ import com.academiaenlinea.academiaenlinea.service.ModuloService;
 import com.academiaenlinea.academiaenlinea.model.Pregunta;
 import com.academiaenlinea.academiaenlinea.model.Respuesta;
 import com.academiaenlinea.academiaenlinea.service.PreguntaService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -60,6 +61,12 @@ private final ComboBox<Curso> cursoComboBox = new ComboBox<>("Selecciona Curso")
         add(seleccionLayout, preguntaGrid, agregarPreguntaBtn);
         setPadding(true);
         setSpacing(true);
+        
+        Button backButton = new Button("Volver");
+        backButton.addClickListener(event -> {
+            UI.getCurrent().getPage().getHistory().back();
+        });
+        add(backButton);
     }
  private void configurarCombos() {
         cursoComboBox.setItems(cursoService.listarCursos());
@@ -133,7 +140,7 @@ private final Modulo moduloSeleccionado;
         public PreguntaFormDialog(Pregunta preguntaExistente, Modulo moduloSeleccionado) {
             this.moduloSeleccionado = moduloSeleccionado;
             this.pregunta = preguntaExistente != null ? preguntaExistente : new Pregunta();
-            setWidth("600px");
+            setWidth("700px");
             setHeight("500px");
 
             enunciadoField.setWidthFull();

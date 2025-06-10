@@ -31,13 +31,16 @@ public class LoginView extends VerticalLayout {
         setSizeFull();
         login = new LoginForm();
         LoginI18n i18n = LoginI18n.createDefault();
+        
+        i18n.getForm().setTitle("Inicio de sesión");
+        
         i18n.getForm().setUsername("Correo electrónico");
         i18n.getForm().setPassword("Contraseña");
         i18n.getForm().setSubmit("Iniciar sesión");
         i18n.getErrorMessage().setTitle("Error de inicio");
         i18n.getErrorMessage().setMessage("Correo o contraseña incorrectos");
+        i18n.getForm().setForgotPassword("");
 
-        login.setI18n(i18n);
 
         login.setI18n(i18n);
 

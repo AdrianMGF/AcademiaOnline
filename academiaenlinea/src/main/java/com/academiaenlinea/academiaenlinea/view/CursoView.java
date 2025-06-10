@@ -6,6 +6,7 @@ import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.service.CursoService;
 import com.academiaenlinea.academiaenlinea.service.InscripcionService;
 import com.academiaenlinea.academiaenlinea.service.UsuarioService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -173,6 +174,11 @@ if (exito) {
         add(filtrosLayout);
         add(grid); 
 formularioDialog.add(formularioLayout); 
+Button backButton = new Button("Volver");
+        backButton.addClickListener(event -> {
+            UI.getCurrent().getPage().getHistory().back();
+        });
+        add(backButton);
 }
 
 private void filtrarCursos() {
