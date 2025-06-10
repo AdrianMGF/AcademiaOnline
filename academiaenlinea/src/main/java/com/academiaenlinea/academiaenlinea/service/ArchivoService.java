@@ -1,5 +1,4 @@
 package com.academiaenlinea.academiaenlinea.service;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.academiaenlinea.academiaenlinea.model.Archivo;
@@ -15,7 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ArchivoService {

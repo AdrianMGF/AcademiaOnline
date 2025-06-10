@@ -5,7 +5,6 @@ import com.academiaenlinea.academiaenlinea.model.Usuario;
 import com.academiaenlinea.academiaenlinea.repository.CursoRepository;
 import com.academiaenlinea.academiaenlinea.repository.UsuarioRepository;
 
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

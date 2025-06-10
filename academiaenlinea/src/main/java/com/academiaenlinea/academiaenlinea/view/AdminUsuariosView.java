@@ -1,7 +1,6 @@
 package com.academiaenlinea.academiaenlinea.view;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.academiaenlinea.academiaenlinea.model.Usuario;

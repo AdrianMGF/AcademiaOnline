@@ -1,7 +1,6 @@
 package com.academiaenlinea.academiaenlinea.service;
 
 import com.academiaenlinea.academiaenlinea.model.Usuario;
-import com.academiaenlinea.academiaenlinea.service.UsuarioService;
 
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.User;
