@@ -4,8 +4,6 @@ Proyecto para asignatura Ingenieria Web
 En este repositorio se incluye el proyecto para la asignatura de Ingenieria Web, basado en los frameworks de Java Spring y Vaadin. Se utiliza una base de datos relacional Mysql. 
 Para el funcionamiento de envios de correos SMTP se utiliza un sandbox para el envio y recibo de estos correos. 
 
-__ PONER SANDBOX __
-
 Si se quiere otro entorno SMTP mas adelante te muestro como cambiar la configuracion para logarlo.
 
 # Funcionamiento de la plataforma
@@ -25,8 +23,12 @@ El sistema esta diseñado de forma segura y con interfaz intutitiva para el usua
 # Diagramas de clases y contenedores
 
 Incluyo archivos en aplicacion draw.io para mejor visualizacion de estos diagramas. Tambien se podran editar.
+Estos archivos podraas descargarlos y con la aplicacion o en la web https://draw.io/ podras visualizarlos.
 
-__ARCHIVOS__
+  - [Diagrama de Clases](Diagramas/containers.drawio)
+  - [Diagrama de Contenedores](Diagramas/Dragramas.drawio)
+
+Igualmente dejo capturas de los diagramas:
 
 ![dragramaclases](https://github.com/user-attachments/assets/982f4cb4-4cbc-4a32-9942-ccd6c48399f8)
 ![clasesUsuariodiagrama](https://github.com/user-attachments/assets/b438c21a-44e1-4718-801e-5c2f9975ed78)
