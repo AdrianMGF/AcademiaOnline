@@ -45,7 +45,6 @@ Abra application.properties y modifique las siguientes propiedades del servidor 
   - spring.datasource.username
   - spring.datasource.password
 
-
 Abra application.properties y modifique las siguientes propiedades del servidor de correo (por ejemplo, Gmail):
 
   - spring.mail.host
