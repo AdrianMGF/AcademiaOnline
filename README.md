@@ -75,9 +75,6 @@ También puedes importar el proyecto al IDE que prefieras, como lo harías con c
 
 # Implementación en producción
 
-En mi caso he usado la herramienta ngrok para exponer mi servidor local.
-
-En caso de querer crear una compilacion de produccion:
 Llame a mvnw clean package -Pproduction(Windows) o ./mvnw clean package -Pproduction(Mac y Linux). Esto generará un archivo JAR con todas las dependencias y recursos frontend, listo para implementar. El archivo se encuentra en la targetcarpeta una vez completada la compilación.
 
 Una vez creado el archivo JAR, puedes ejecutarlo usando java -jar target/fullstackwebapp-1.0.0.jar
