@@ -8,15 +8,15 @@ Si se quiere otro entorno SMTP mas adelante te muestro como cambiar la configura
 
 # Funcionamiento de la plataforma
 
-La plataforma permite registrarse como usuario (con rol de alumno) e iniciar sesion (independientemente del rol).
-Para el registro se enviara un correo para confirmar el registro el cual enviara un enlace con un token de verificacion.
-Incluye creacion, publicacion y edicion de cursos y modulos.
-Subida y consulta de material didactico (archivos).
-Creacion de tests de evaluacion con correccion automatica.
-Inscripcion y seguimiento de cursos por parte del alumnado.
-Realizacion de test por parte del alumnado de los distintos modulos de cada curso.
-Panel de administracion para control de usuarios y roles.
-Notificaciones via SMTP.
+- La plataforma permite registrarse como usuario (con rol de alumno) e iniciar sesion (independientemente del rol).
+- Para el registro se enviara un correo para confirmar el registro el cual enviara un enlace con un token de verificacion.
+- Incluye creacion, publicacion y edicion de cursos y modulos.
+- Subida y consulta de material didactico (archivos).
+- Creacion de tests de evaluacion con correccion automatica.
+- Inscripcion y seguimiento de cursos por parte del alumnado.
+- Realizacion de test por parte del alumnado de los distintos modulos de cada curso.
+- Panel de administracion para control de usuarios y roles.
+- Notificaciones via SMTP.
 
 El sistema esta diseñado de forma segura y con interfaz intutitiva para el usuario.
 
