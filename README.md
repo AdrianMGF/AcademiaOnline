@@ -29,8 +29,6 @@ Incluyo archivos en aplicacion draw.io para mejor visualizacion de estos diagram
 __ARCHIVOS__
 
 ![dragramaclases](https://github.com/user-attachments/assets/982f4cb4-4cbc-4a32-9942-ccd6c48399f8)
-
-
 ![clasesUsuariodiagrama](https://github.com/user-attachments/assets/b438c21a-44e1-4718-801e-5c2f9975ed78)
 ![cursomodulodiagrama](https://github.com/user-attachments/assets/816d3ac3-4aeb-4bb5-b289-562567f39d79)
 ![preghunta respuestadiag](https://github.com/user-attachments/assets/0e4f2b5e-2274-424c-8850-c7c136edb293)
@@ -41,22 +39,26 @@ __ARCHIVOS__
 
 Abra application.properties y modifique las siguientes propiedades del servidor de base de datos (por ejemplo, MySQL):
 
-spring.datasource.url
-spring.datasource.nombreusuario
-spring.datasource.contraseña
+  - spring.datasource.url
+  - spring.datasource.username
+  - spring.datasource.password
+
 
 Abra application.properties y modifique las siguientes propiedades del servidor de correo (por ejemplo, Gmail):
 
-spring.mail.host
-puerto de correo de primavera
-spring.mail.nombredeusuario
-spring.mail.contraseña
+  - spring.mail.host
+  - spring.mail.port
+  - spring.mail.username
+  - spring.mail.password
 
 
 Para este caso he usado un SMTP sandbox como ya he mencionado anteriormente. Dejo las cedenciales aqui para su uso:
 
-__CREDENCIALES__
+  - https://mailtrap.io/
+  - Ususario: icuentaiw@gmail.com
+  - Contraseña: Icuentaiw@gmail.com1
 
+Con estas credenciales podras usar el servicio se SMTP ya configurado en el proyecto. Navegando a la pestaña de sandbox y seleccionando el box con nombre 'My Inbox'.
 
 # Ejecutar la aplicación
 
