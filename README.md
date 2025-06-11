@@ -45,6 +45,11 @@ Abra application.properties y modifique las siguientes propiedades del servidor 
   - spring.datasource.username
   - spring.datasource.password
 
+Actualmente estoy usando una base de datos Mysql, la cual ya esta configurada en el proyecto. Si quieres usar esta base de datos solo tienes que crear una tabla llamada academia_db en Mysql y se importaran automaticamente al compilar el proyecto las tablas necesarias en la base de datos.
+Por defecto se crea un usuario ADMIN con credenciales: 
+- admin@academia.com
+- admin123
+
 Abra application.properties y modifique las siguientes propiedades del servidor de correo (por ejemplo, Gmail):
 
   - spring.mail.host
