@@ -1,12 +1,20 @@
 package com.academiaenlinea.academiaenlinea.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "usuarios")
 @Data
 @NoArgsConstructor
@@ -37,6 +45,20 @@ public class Usuario{
 
 
     private boolean bloqueado = false;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime fechaCreacion;
+
+     @LastModifiedDate
+    private LocalDateTime fechaModificacion;
+
+    @CreatedBy
+    @Column(updatable = false)
+    private String creadoPor;
+
+    @LastModifiedBy
+    private String modificadoPor;
 
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 private List<Inscripcion> inscripciones = new ArrayList<>();
